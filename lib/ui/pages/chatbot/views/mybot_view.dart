@@ -1,128 +1,94 @@
-import 'dart:convert';
-
+import 'package:chat_gpt/ui/pages/chatbot/utils/dialogs.dart';
+import 'package:chat_gpt/ui/providers/providers.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../utils/helper.dart';
+import '../chatbot_controller.dart';
 
-class ChatBot extends StatefulWidget {
+//el consumer se usa para poder trabajar el gestor de estados rivepood
+class ChatBot extends ConsumerStatefulWidget {
   const ChatBot({super.key});
 
   @override
-  State<ChatBot> createState() => _ChatBotState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChatBotState();
 }
 
-class _ChatBotState extends State<ChatBot> {
-  ChatUser usuario = ChatUser(id: "1", firstName: "User");
-  ChatUser bot = ChatUser(id: "2", firstName: "Hannah");
-  List<ChatMessage> mensajeEnv = [];
-  List<ChatUser> typing=[];
-  bool showInitialMessage = true;
-  
+class _ChatBotState extends ConsumerState<ChatBot> {
+  late final ChatbotController controller; //late, lo que se dice es que espere a que se le asignen datos
+  @override
+  void initState() {
+    super.initState();
 
-  getData(ChatMessage m) async {
-    typing.add(bot);
-    mensajeEnv.insert(0, m);
-    setState(() {
+    controller = ref.read(chatBotStateProvider.notifier);
 
-    });
-    await http.post(Uri.parse(ourUrl),headers: header,body: jsonEncode(getPropmt(m.text))).
-    then((value){
-      if(value.statusCode==200){
-        var result=jsonDecode(value.body);
-        print(result["candidates"][0]["content"]["parts"][0]["text"]);
-        ChatMessage m1=ChatMessage(
-            user: bot,
-            createdAt: DateTime.now(),
-          text: result["candidates"][0]["content"]["parts"][0]["text"],
-        );
-        mensajeEnv.insert(0, m1);
-
-      }else{
-        print("Error occurred");
-      }
-    }).
-    catchError((e){});
-    typing.remove(bot);
-    setState(() {
-
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      //Este metodo se usa para llamar datos despues que se haya construido la pantalla
+      controller.getFirstMessage();
     });
   }
 
-obtenerPrimerMensaje() {
-    
-   var data;
-   String mensaje = "No funcionó";
-    data={"contents":[{"parts":[{"text":"Eres Hanna, un asistente amable que trabaja para TouriC. TouriC es una aplicación movil que ayuda a los turistas que visitan cartagena a recomendarles sitios turisticos, restaurantes, horarios de sitios historicos, etc. Después de primero ofrecerles unas palabras de saludo, esperaras a que ellos te comenten lo que necesitan ayuda con respecto a la ciudad Cartagena de indias, o sugerencias para planes de turismo en la ciudad. Les vas a dar un saludo amable. Utiliza un solo parrafo y menos de 40 palabras."}],
-        }]};
-    http.post(Uri.parse(ourUrl),headers: header,body: jsonEncode(data)).
-    then((value){
-        var result=jsonDecode(value.body);
-        mensaje = result["candidates"][0]["content"]["parts"][0]["text"];
-        print(mensaje); 
-
-        setState(() {
-        mensajeEnv.insert(0, ChatMessage(
-          text: mensaje,
-          user: bot,
-          createdAt: DateTime.now(),
-        ));
-        showInitialMessage = false;
-      });
-    });
-}
- @override
-  void initState() {
-    super.initState();
-    if (showInitialMessage) {
-    obtenerPrimerMensaje();
+  getDataMessage(ChatMessage m) async {
+    final response = await controller.getData(m);
+    if (!response && mounted) {
+      showdialogError(context);
+      return;
     }
   }
 
   @override
-Widget build(BuildContext context) {
-  final size = MediaQuery.of(context).size;
-  return Scaffold(
-    appBar: AppBar(
-      // Your app bar configuration (optional)
-    ),
-    body: SafeArea(
-      child: SizedBox(
-        height: size.height,
-        width: size.width,
-        child: DashChat (
-          // Your existing DashChat configuration
-          
-          inputOptions: InputOptions(
-            sendOnEnter: true,
-            cursorStyle: CursorStyle(color: Colors.black),
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final stateController = ref.watch(chatBotStateProvider); //Es para escuychar los cambios de las variables que estan en tu estado.
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.redAccent,
+        title: const Text(
+          "Chat Bot - turismo",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SizedBox(
+          height: size.height,
+          width: size.width,
+          child: DashChat(
+            inputOptions: const InputOptions(
+              sendOnEnter: true,
+              cursorStyle: CursorStyle(color: Colors.black),
+            ),
+            messageOptions: MessageOptions(
+              showTime: true,
+              textColor: Colors.black,
+              containerColor: const Color.fromARGB(204, 227, 207, 118),
+              currentUserContainerColor: const Color.fromARGB(255, 181, 115, 40),
+              avatarBuilder: yourAvatarBuilder,
+            ),
+            typingUsers: stateController.typing,
+            currentUser: controller.usuario,
+            onSend: getDataMessage,
+            messages: stateController.mensajeEnv,
           ),
-          messageOptions: MessageOptions(
-            showTime: true,
-            textColor: Colors.black,
-            containerColor: Color.fromARGB(204, 227, 207, 118),
-            currentUserContainerColor: Color.fromARGB(255, 181, 115, 40),
-            avatarBuilder: yourAvatarBuilder,
-          ),
-          typingUsers: typing,
-          currentUser: usuario,
-          onSend: (ChatMessage m) {
-            getData(m);
-          },
-          messages: mensajeEnv,
         ),
       ),
-    ),
-  );
-}
-  Widget yourAvatarBuilder(ChatUser user,Function? onAvatarTap, Function? onAvatarLongPress){
-    return Center(child: ClipRRect(
-  borderRadius: BorderRadius.circular(20), // Image border
-  child: SizedBox.fromSize(
-    size: Size.fromRadius(25), // Image radius
-    child: Image.asset('Hannah.png',height: 40,width: 40,),
-  ),
-));
+    );
+  }
+
+  Widget yourAvatarBuilder(ChatUser user, Function? onAvatarTap, Function? onAvatarLongPress) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30), // Image border
+        child: SizedBox.fromSize(
+          size: const Size.fromRadius(15), // Image radius
+          child: Image.asset(
+            'assets/Hannah.png',
+            height: 30,
+            width: 30,
+          ),
+        ),
+      ),
+    );
   }
 }
