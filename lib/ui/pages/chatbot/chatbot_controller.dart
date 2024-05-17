@@ -10,9 +10,10 @@ import 'utils/utils_app.dart';
 
 class ChatbotController extends StateNotifier<ChatbotState> {
   ChatbotController() : super(ChatbotState());
-
-  final bot = ChatUser(id: "2", firstName: "Hannah");
+ 
   final usuario = ChatUser(id: "1", firstName: "User");
+  final bot = ChatUser(id: "2", firstName: "Hannah");
+ 
 
   set typing(List<ChatUser> data) => state = state.copyWith(typing: data);
   set mensajeEnv(List<ChatMessage> dataM) => state = state.copyWith(mensajeEnv: dataM);
@@ -39,8 +40,9 @@ class ChatbotController extends StateNotifier<ChatbotState> {
         );
         mensajeEnvNew.insert(0, m1);
         mensajeEnv = mensajeEnvNew; //Se asigna al estado los valores obtenidos, para mostar en pantalla
-        return true;
+        return true; 
       }
+      typingNew.remove(bot);
       return false;
     } catch (e) {
       print("Error occurred $e");

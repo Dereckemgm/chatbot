@@ -3,6 +3,7 @@ import 'package:chat_gpt/ui/providers/providers.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '../chatbot_controller.dart';
 
@@ -15,11 +16,22 @@ class ChatBot extends ConsumerStatefulWidget {
 }
 
 class _ChatBotState extends ConsumerState<ChatBot> {
+
+  final FlutterTts _flutterTts = FlutterTts();
+  List<Map> _voices = [];
+  Map? _currentVoice;
+  int? _currentWordStart, _currentWordEnd;
+
+  ChatUser muself = ChatUser(id: "1", firstName: "User");
+  ChatUser bot = ChatUser(id: "2", firstName: "Hannah");
+  List<ChatMessage> allMassages = [];
+  List<ChatUser> typing=[];
   late final ChatbotController controller; //late, lo que se dice es que espere a que se le asignen datos
+
   @override
   void initState() {
     super.initState();
-
+    initTTS();
     controller = ref.read(chatBotStateProvider.notifier);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -28,8 +40,44 @@ class _ChatBotState extends ConsumerState<ChatBot> {
     });
   }
 
+  void initTTS() {
+    _flutterTts.setProgressHandler((text, start, end, word) {
+      setState(() {
+        _currentWordStart = start;
+        _currentWordEnd = end;
+      });
+    });
+    _flutterTts.getVoices.then((data) {
+      try {
+        List<Map> voices = List<Map>.from(data);
+        setState(() {
+          _voices =
+              voices.where((voice) => voice["name"].contains("en")).toList();
+          _currentVoice = _voices.first;
+          setVoice(_currentVoice!);
+        });
+      } catch (e) {
+        print(e);
+      }
+    });
+  }
+
+  void setVoice(Map voice) {
+    _flutterTts.setVoice({"name": voice["name"], "locale": voice["locale"]});
+  }
+
+  
+
   getDataMessage(ChatMessage m) async {
+    typing.add(bot);
+    setState(() {
+
+    });
     final response = await controller.getData(m);
+    typing.remove(bot);
+    setState(() {
+
+    });
     if (!response && mounted) {
       showdialogError(context);
       return;
@@ -42,7 +90,7 @@ class _ChatBotState extends ConsumerState<ChatBot> {
     final stateController = ref.watch(chatBotStateProvider); //Es para escuychar los cambios de las variables que estan en tu estado.
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Color.fromARGB(255, 244, 203, 91),
         title: const Text(
           "Chat Bot - turismo",
           style: TextStyle(color: Colors.white),
@@ -65,13 +113,22 @@ class _ChatBotState extends ConsumerState<ChatBot> {
               currentUserContainerColor: const Color.fromARGB(255, 181, 115, 40),
               avatarBuilder: yourAvatarBuilder,
             ),
-            typingUsers: stateController.typing,
+            typingUsers: typing,
             currentUser: controller.usuario,
             onSend: getDataMessage,
             messages: stateController.mensajeEnv,
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _flutterTts.speak(stateController.mensajeEnv.last.text);
+        },
+        child: const Icon(
+          Icons.speaker_phone,
+        ),
+      ),
+      
     );
   }
 
