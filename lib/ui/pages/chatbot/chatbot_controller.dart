@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../../data/models/chatt_model_response.dart';
 import 'utils/helper.dart';
 import 'utils/utils_app.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class ChatbotController extends StateNotifier<ChatbotState> {
   ChatbotController() : super(ChatbotState());
@@ -17,6 +18,11 @@ class ChatbotController extends StateNotifier<ChatbotState> {
 
   set typing(List<ChatUser> data) => state = state.copyWith(typing: data);
   set mensajeEnv(List<ChatMessage> dataM) => state = state.copyWith(mensajeEnv: dataM);
+
+  final FlutterTts _flutterTts = FlutterTts(); // Define _flutterTts aquí
+
+
+  
 
   Future<bool> getData(ChatMessage m) async {
     try {
@@ -71,6 +77,9 @@ class ChatbotController extends StateNotifier<ChatbotState> {
       );
 
       mensajeEnv = mensajeEnvNew;
+      print (mensajeEnvNew);
+    // Hablar el primer mensaje del chatbot
+    _flutterTts.speak(mensajeEnvNew.first.text);
     }
   }
 }
