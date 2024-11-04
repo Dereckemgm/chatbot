@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../config/custom_icons.dart';
-import 'package:chat_gpt/ui/global_widgets/global_widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/app_data.dart';

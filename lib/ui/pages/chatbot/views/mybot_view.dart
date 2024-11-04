@@ -1,15 +1,11 @@
 import 'package:chat_gpt/ui/pages/chatbot/utils/dialogs.dart';
-import 'package:chat_gpt/ui/pages/user/bookmark_view.dart';
 import 'package:chat_gpt/ui/providers/providers.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../user/home_view.dart'; // Importa la vista de Home
-import '../../user/profile_view.dart'; // Importa la vista de Perfil
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:chat_gpt/ui/global_widgets/global_widgets.dart';
 
 import '../chatbot_controller.dart';
 
@@ -73,31 +69,43 @@ class _ChatBotState extends ConsumerState<ChatBot> {
     _flutterTts.setVoice({"name": voice["name"], "locale": voice["locale"]});
   }
 
-  Future<void> saveMessage(String user, String bot) async {
-    const url = "http://127.0.0.1/chatbot_turismo/guardar_mensajes.php";
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        body: {
-          'user': user,
-          'bot': bot,
-        },
-      );
+ Future<void> saveMessage(String user, String bot) async {
+  const url = "http://localhost:3000/chats/mensajes"; // Cambia localhost por esta IP si usas un emulador
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        'mensaje_usuario': user,      // Cambiado a 'mensaje_usuario'
+        'respuesta_chatbot': bot,     // Cambiado a 'respuesta_chatbot'
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success']) {
-          print('Mensaje guardado exitosamente');
-        } else {
-          print('Error al guardar el mensaje: ${data['error']}');
-        }
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      if (data['success']) {
+        print('Mensaje guardado exitosamente');
       } else {
-        print('Error en la solicitud al servidor');
+        print('Error al guardar el mensaje: ${data['message']}');
       }
-    } catch (e) {
-      print('Error: $e');
+    } else {
+      print('Error en la solicitud al servidor: ${response.statusCode}');
+      print('Cuerpo de la respuesta: ${response.body}'); // Manten esta línea para ver la respuesta
     }
+  } catch (e) {
+    print('Error: $e');
   }
+}
+
+ // Función para limpiar la respuesta del chatbot
+  String cleanResponse(String response) {
+    // Elimina caracteres no deseados
+    return response.replaceAll(RegExp(r'<ctrl\d+>|[\u3130-\u318F\uAC00-\uD7A3]+'), '');
+  }
+
+
 
   getDataMessage(ChatMessage m) async {
     typing.add(bot);
@@ -114,7 +122,7 @@ class _ChatBotState extends ConsumerState<ChatBot> {
 
     final stateController = ref.watch(chatBotStateProvider);
 // Obtener y guardar el mensaje del bot y del user
-  final botMessage = stateController.mensajeEnv.first.text;
+  final botMessage = cleanResponse(stateController.mensajeEnv.first.text); // Limpiar el mensaje
   await saveMessage(m.text, botMessage);
 
   // Reproducir automáticamente el mensaje del chatbot
@@ -123,12 +131,13 @@ class _ChatBotState extends ConsumerState<ChatBot> {
 
 
  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final stateController = ref.watch(chatBotStateProvider);
+Widget build(BuildContext context) {
+  final size = MediaQuery.of(context).size;
+  final stateController = ref.watch(chatBotStateProvider);
 
-    return SafeArea(
-      child: SizedBox(
+  return SafeArea(
+    child: Scaffold( // Asegúrate de envolverlo en un Scaffold para usar el floatingActionButton
+      body: SizedBox(
         height: size.height,
         width: size.width,
         child: DashChat(
@@ -149,8 +158,37 @@ class _ChatBotState extends ConsumerState<ChatBot> {
           messages: stateController.mensajeEnv,
         ),
       ),
-    );
-  }
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              // Obtener el último mensaje del chatbot
+              final lastBotMessage = stateController.mensajeEnv.first.text;
+              // Hablar el último mensaje del chatbot
+              _flutterTts.speak(lastBotMessage);
+            },
+            child: const Icon(
+              Icons.speaker_phone,
+            ),
+          ),
+          SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              // Detener la reproducción del mensaje del chatbot
+              _flutterTts.stop();
+            },
+            child: const Icon(
+              Icons.stop,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
 
 

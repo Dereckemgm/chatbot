@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 Map<String,dynamic> getPropmt(String message){
   DateTime now = DateTime.now();
   String formattedDate = DateFormat('dd MMMM yyyy').format(now);
-  print(formattedDate); // Salida: "22 septiembre 2024" (o el mes actual)
+  print(formattedDate); 
 return {"contents": [
     {
       "role": "user",
@@ -194,7 +194,7 @@ return {"contents": [
       "role": "model",
       "parts": [
         {
-          "text": "¡Hola! Hoy tenemos un día lleno de actividades en Cartagena. 🎉 Puedes disfrutar del Festival Voces del Jazz y del Caribe. 🎷🎶 \n\n¿Te gustaría saber más sobre este festival o prefieres que te recomiende otros planes para el día? \n\n\n"
+          "text": "¡Hola! Hoy tenemos un día lleno de actividades en Cartagena.\n\n\n"
         }
       ]
     },
@@ -210,7 +210,7 @@ return {"contents": [
       "role": "model",
       "parts": [
         {
-          "text": "¡Ups! Tienes razón, me equivoqué. 🤔 Revisé mi base de datos y el Festival Voces del Jazz y del Caribe se celebra. \n\n¿Te gustaría saber más sobre este festival? O ¿Te gustaría que te recomiende otros planes para hoy? \n\n\n"
+          "text": "¡Ups! Tienes razón, me equivoqué. \n\n¿Te gustaría saber más sobre este festival? O ¿Te gustaría que te recomiende otros planes para hoy? \n\n\n"
         }
       ]
     },
@@ -234,7 +234,7 @@ return {"contents": [
       "role": "user",
       "parts": [
         {
-          "text": "Mejor si no hay nada el dia que pregunta entonces dile que hay para lo que queda de esa semana o mes, en lugar de decir que no hay nada en la base de datos, el resto estuvo bien diciendole que cartagena tiene mucho por ofrecer, intenta de nuevo algo asi:\n\nPara hoy, no encuentro ningún evento, pero la próxima semana el Festival Voces del Jazz y del Caribe se celebra. Igual ¡no te preocupes! Cartagena tiene mucho que ofrecer. ¿Te gustaría que te recomiende algunas playas para disfrutar del sol y el mar? 🌊 🏖️ O, ¿prefieres visitar algún lugar con historia? 🏛️"
+          "text": "Mejor si no hay nada el dia que pregunta entonces dile que hay para lo que queda de esa semana o mes, en lugar de decir que no hay nada en la base de datos, el resto estuvo bien diciendole que cartagena tiene mucho por ofrecer, intenta de nuevo algo asi:\n\nPara hoy, no encuentro ningún evento, Igual ¡no te preocupes! Cartagena tiene mucho que ofrecer. ¿Te gustaría que te recomiende algunas playas para disfrutar del sol y el mar? 🌊 🏖️ O, ¿prefieres visitar algún lugar con historia? 🏛️"
         }
       ]
     },
@@ -242,7 +242,7 @@ return {"contents": [
       "role": "model",
       "parts": [
         {
-          "text": "Para hoy, no encuentro ningún evento programado 🤔, aunque la próxima semana el Festival Voces del Jazz y del Caribe se celebra. ¡No te preocupes! Cartagena tiene mucho que ofrecer. ¿Te gustaría que te recomiende algunas playas para disfrutar del sol y el mar? 🌊 🏖️ O, ¿prefieres visitar algún lugar con historia? 🏛️ \n"
+          "text": "Para hoy, no encuentro ningún evento programado 🤔, ¡No te preocupes! Cartagena tiene mucho que ofrecer. ¿Te gustaría que te recomiende algunas playas para disfrutar del sol y el mar? 🌊 🏖️ O, ¿prefieres visitar algún lugar con historia? 🏛️ \n"
         }
       ]
     },
@@ -418,7 +418,7 @@ return {"contents": [
       "role": "model",
       "parts": [
         {
-          "text": "hoy no hay eventos programados en mi base de datos. 🤔  Sin embargo, Cartagena siempre tiene algo que ofrecer. ¿Te gustaría que te recomiende algunas playas para disfrutar del sol y el mar? 🌊 🏖️  O, ¿prefieres visitar algún lugar con historia? 🏛️ \n\nRecuerda, el Festival Voces del Jazz y del Caribe se celebra.  ¡No te lo pierdas! \n"
+          "text": "hoy no hay eventos programados en mi base de datos. 🤔  Sin embargo, Cartagena siempre tiene algo que ofrecer. ¿Te gustaría que te recomiende algunas playas para disfrutar del sol y el mar? 🌊 🏖️  O, ¿prefieres visitar algún lugar con historia? 🏛️ \n"
         }
       ]
     },
