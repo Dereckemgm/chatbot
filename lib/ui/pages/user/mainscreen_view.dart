@@ -1,4 +1,3 @@
-import 'package:chat_gpt/ui/pages/chatbot/chatbot.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_gpt/ui/global_widgets/global_widgets.dart';
 import '../pages.dart';

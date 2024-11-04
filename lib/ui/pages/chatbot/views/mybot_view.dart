@@ -40,7 +40,7 @@ class _ChatBotState extends ConsumerState<ChatBot> {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       //Este metodo se usa para llamar datos despues que se haya construido la pantalla
-      controller.getFirstMessage();
+       ref.read(chatBotStateProvider.notifier).init();
     });
   }
 
